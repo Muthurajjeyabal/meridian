@@ -516,10 +516,21 @@ export function addStudentWithParent(input: {
   classId: string
   sectionId: string
   gender: 'male' | 'female' | 'other'
+  dateOfBirth?: string
+  bloodGroup?: string
+  admissionNo?: string
+  enrollmentNo?: string
+  photoUrl?: string
   parentEmail: string
   parentName: string
   parentPhone: string
   relationship?: string
+  heightCm?: number
+  weightKg?: number
+  allergies?: string
+  medicalNotes?: string
+  emergencyName?: string
+  emergencyPhone?: string
 }) {
   const db = loadDB()
   const year = db.years.find((y) => y.schoolId === input.schoolId && y.isCurrent) ?? db.years.find((y) => y.schoolId === input.schoolId)
@@ -536,14 +547,27 @@ export function addStudentWithParent(input: {
     sectionId: input.sectionId,
     firstName: input.firstName.trim(),
     lastName: input.lastName.trim(),
-    admissionNo: `ADM${Date.now().toString().slice(-6)}`,
+    admissionNo: input.admissionNo?.trim() || `ADM${Date.now().toString().slice(-6)}`,
+    enrollmentNo: input.enrollmentNo?.trim() || undefined,
     rollNo: String(db.students.filter((s) => s.sectionId === input.sectionId).length + 1),
-    dateOfBirth: '2015-01-01',
+    dateOfBirth: input.dateOfBirth || '2015-01-01',
     gender: input.gender,
-    bloodGroup: 'O+',
+    bloodGroup: input.bloodGroup || 'O+',
     photoHue: 160 + (db.students.length % 40) * 4,
+    photoUrl: input.photoUrl,
   }
   db.students.push(student)
+  db.health.push({
+    studentId: student.id,
+    schoolId: input.schoolId,
+    heightCm: input.heightCm || 0,
+    weightKg: input.weightKg || 0,
+    medicalNotes: input.medicalNotes || '',
+    allergies: input.allergies || '',
+    emergencyName: input.emergencyName || input.parentName,
+    emergencyPhone: input.emergencyPhone || input.parentPhone,
+    visibleToParents: true,
+  })
 
   const email = input.parentEmail.trim().toLowerCase()
   let profile = db.profiles.find((p) => p.email.toLowerCase() === email)
