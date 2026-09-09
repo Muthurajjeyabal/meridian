@@ -27,8 +27,8 @@ export default function TeacherAttendance() {
   const section = db.sections.find((s) => s.id === sectionId)
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        <select className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm" value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <select className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm sm:w-auto" value={sectionId} onChange={(e) => setSectionId(e.target.value)}>
           {sections.map((s) => {
             const c = db.classes.find((x) => x.id === s.classId)
             return <option key={s.id} value={s.id}>Class {c?.name}-{s.name}</option>
