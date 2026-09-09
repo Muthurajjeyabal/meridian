@@ -16,7 +16,7 @@ export default function TeacherHome() {
         <p className="text-sm text-slate-500">Teacher desk</p>
         <h1 className="text-2xl font-extrabold">{profile?.fullName}</h1>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Card><p className="text-xs text-slate-500">Assigned classes</p><p className="text-2xl font-extrabold">{classes.map(c => c.name).join(', ') || '—'}</p></Card>
         <Card><p className="text-xs text-slate-500">Students in sections</p><p className="text-2xl font-extrabold">{students.length}</p></Card>
         <Card><p className="text-xs text-slate-500">Homework posted</p><p className="text-2xl font-extrabold">{hw.length}</p></Card>
