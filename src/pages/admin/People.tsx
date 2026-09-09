@@ -22,8 +22,11 @@ export default function People() {
   const parents = db.parents.filter((p) => p.schoolId === schoolId)
 
   const [sf, setSf] = useState({
-    firstName: '', lastName: '', classId: classes[0]?.id ?? '', sectionId: '', gender: 'male' as const,
+    firstName: '', lastName: '', classId: classes[0]?.id ?? '', sectionId: '',
+    gender: 'male' as 'male' | 'female' | 'other',
+    dateOfBirth: '', bloodGroup: 'O+', admissionNo: '', enrollmentNo: '', photoUrl: '',
     parentName: '', parentEmail: '', parentPhone: '', relationship: 'father',
+    heightCm: '', weightKg: '', allergies: '', medicalNotes: '', emergencyName: '', emergencyPhone: '',
   })
   const classSections = useMemo(() => sections.filter((s) => s.classId === sf.classId), [sections, sf.classId])
 
@@ -50,6 +53,30 @@ export default function People() {
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="First name" value={sf.firstName} onChange={(e) => setSf({ ...sf, firstName: e.target.value })} />
             <Field label="Last name" value={sf.lastName} onChange={(e) => setSf({ ...sf, lastName: e.target.value })} />
+            <Field label="Date of birth" type="date" value={sf.dateOfBirth} onChange={(e) => setSf({ ...sf, dateOfBirth: e.target.value })} />
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Gender</span>
+              <select className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" value={sf.gender}
+                onChange={(e) => setSf({ ...sf, gender: e.target.value as 'male' | 'female' | 'other' })}>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <Field label="Admission number" value={sf.admissionNo} onChange={(e) => setSf({ ...sf, admissionNo: e.target.value })} placeholder="Leave blank to auto" />
+            <Field label="Enrollment number" value={sf.enrollmentNo} onChange={(e) => setSf({ ...sf, enrollmentNo: e.target.value })} />
+            <Field label="Blood group" value={sf.bloodGroup} onChange={(e) => setSf({ ...sf, bloodGroup: e.target.value })} />
+            <label className="block sm:col-span-2">
+              <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Photo</span>
+              <input type="file" accept="image/*" className="w-full text-sm" onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const reader = new FileReader()
+                reader.onload = () => setSf((s) => ({ ...s, photoUrl: String(reader.result || '') }))
+                reader.readAsDataURL(file)
+              }} />
+              {sf.photoUrl && <img src={sf.photoUrl} alt="" className="mt-2 h-16 w-16 rounded-2xl object-cover" />}
+            </label>
             <label className="block">
               <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">Class</span>
               <select className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm" value={sf.classId}
@@ -68,6 +95,12 @@ export default function People() {
             <Field label="Parent name" value={sf.parentName} onChange={(e) => setSf({ ...sf, parentName: e.target.value })} />
             <Field label="Parent email" value={sf.parentEmail} onChange={(e) => setSf({ ...sf, parentEmail: e.target.value })} />
             <Field label="Parent phone" value={sf.parentPhone} onChange={(e) => setSf({ ...sf, parentPhone: e.target.value })} />
+            <Field label="Height (cm)" value={sf.heightCm} onChange={(e) => setSf({ ...sf, heightCm: e.target.value })} />
+            <Field label="Weight (kg)" value={sf.weightKg} onChange={(e) => setSf({ ...sf, weightKg: e.target.value })} />
+            <Field label="Allergies" value={sf.allergies} onChange={(e) => setSf({ ...sf, allergies: e.target.value })} />
+            <Field label="Medical notes" value={sf.medicalNotes} onChange={(e) => setSf({ ...sf, medicalNotes: e.target.value })} />
+            <Field label="Emergency name" value={sf.emergencyName} onChange={(e) => setSf({ ...sf, emergencyName: e.target.value })} />
+            <Field label="Emergency phone" value={sf.emergencyPhone} onChange={(e) => setSf({ ...sf, emergencyPhone: e.target.value })} />
           </div>
           <p className="text-xs text-slate-500">Use parent@northridge.edu to attach a third child to the demo parent. New email gets password Parent@123.</p>
           <div className="flex gap-2">
@@ -75,8 +108,13 @@ export default function People() {
               try {
                 const res = addStudentWithParent({
                   schoolId, firstName: sf.firstName, lastName: sf.lastName, classId: sf.classId, sectionId: sf.sectionId,
-                  gender: 'male', parentEmail: sf.parentEmail, parentName: sf.parentName, parentPhone: sf.parentPhone,
+                  gender: sf.gender, dateOfBirth: sf.dateOfBirth, bloodGroup: sf.bloodGroup,
+                  admissionNo: sf.admissionNo, enrollmentNo: sf.enrollmentNo, photoUrl: sf.photoUrl || undefined,
+                  parentEmail: sf.parentEmail, parentName: sf.parentName, parentPhone: sf.parentPhone,
                   relationship: sf.relationship,
+                  heightCm: Number(sf.heightCm) || 0, weightKg: Number(sf.weightKg) || 0,
+                  allergies: sf.allergies, medicalNotes: sf.medicalNotes,
+                  emergencyName: sf.emergencyName, emergencyPhone: sf.emergencyPhone,
                 })
                 setMsg(`${res.student.firstName} added. Parent login ${res.parentEmail} / ${res.parentPassword}`)
                 setErr('')
@@ -145,8 +183,12 @@ export default function People() {
       </div>
       <div className="mt-4 grid gap-2">
         {tab === 'students' && students.map((s) => (
-          <Card key={s.id} className="flex items-center justify-between">
-            <div><p className="font-semibold">{studentName(s)}</p><p className="text-xs text-slate-500">{classLabel(s)} · {s.admissionNo}</p></div>
+          <Card key={s.id} className="flex items-center gap-3">
+            {s.photoUrl ? <img src={s.photoUrl} alt="" className="h-12 w-12 rounded-2xl object-cover" /> : null}
+            <div>
+              <p className="font-semibold">{studentName(s)}</p>
+              <p className="text-xs text-slate-500">{classLabel(s)} · Adm {s.admissionNo}{s.enrollmentNo ? ` · Enr ${s.enrollmentNo}` : ''} · DOB {s.dateOfBirth}</p>
+            </div>
           </Card>
         ))}
         {tab === 'teachers' && teachers.map((t) => {
