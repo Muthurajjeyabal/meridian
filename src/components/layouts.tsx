@@ -126,20 +126,20 @@ export function StaffShell({ children, kind }: { children: ReactNode; kind: 'sch
   const items = staffNav[kind]
   const title = kind === 'super_admin' ? 'Meridian Network' : school?.name ?? 'Campus'
   return (
-    <div className="min-h-dvh bg-[#eef3f8] md:grid md:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
-      {open && <button className="fixed inset-0 z-20 bg-slate-900/40 md:hidden" onClick={() => setOpen(false)} aria-label="Close menu" />}
+    <div className="min-h-dvh bg-[#eef3f8]">
+      {open && <button className="fixed inset-0 z-20 bg-slate-900/40" onClick={() => setOpen(false)} aria-label="Close menu" />}
       <aside className={cn(
-        'fixed inset-y-0 left-0 z-30 flex w-[min(86vw,240px)] flex-col border-r border-slate-200 bg-slate-950 text-white transition md:static md:w-auto xl:w-auto',
-        open ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+        'fixed inset-y-0 left-0 z-30 flex w-[min(86vw,280px)] flex-col bg-slate-950 text-white shadow-2xl transition',
+        open ? 'translate-x-0' : '-translate-x-full',
       )}>
         <div className="flex items-center justify-between px-5 py-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">Meridian</p>
             <p className="mt-1 text-sm font-bold leading-tight">{title}</p>
           </div>
-          <button className="md:hidden" onClick={() => setOpen(false)}><X size={18} /></button>
+          <button onClick={() => setOpen(false)} className="grid h-9 w-9 place-items-center rounded-xl bg-white/10"><X size={16} /></button>
         </div>
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-24">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3">
           {items.map(([to, Icon, label]) => (
             <NavLink
               key={to}
@@ -157,31 +157,27 @@ export function StaffShell({ children, kind }: { children: ReactNode; kind: 'sch
             </NavLink>
           ))}
         </nav>
-        <button
-          onClick={() => signOut()}
-          className="absolute bottom-6 left-3 right-3 flex items-center gap-2 rounded-2xl px-3 py-2 text-sm text-slate-400 hover:bg-white/5"
-        >
-          <LogOut size={16} /> Sign out
-        </button>
       </aside>
-      <div className="min-w-0">
-        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-3 py-3 backdrop-blur sm:px-4">
-          <button className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 md:hidden" onClick={() => setOpen(true)}>
-            <Menu size={18} />
-          </button>
-          <p className="hidden text-sm font-semibold text-slate-600 md:block">Academic year 2026–27 · Teacher / office desk</p>
-          <div className="ml-auto flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-sm font-semibold leading-none">{profile?.fullName}</p>
-              <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-500">{session?.role.replace('_', ' ')}</p>
-            </div>
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-cyan-700 text-xs font-bold text-white">
-              {initials(profile?.fullName ?? 'U')}
-            </div>
-          </div>
-        </header>
-        <div className="mx-auto w-full max-w-6xl p-4 md:p-6 xl:p-8">{children}</div>
-      </div>
+      <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-slate-200 bg-white/90 px-3 py-3 backdrop-blur sm:px-4">
+        <button className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-100" onClick={() => setOpen(true)} aria-label="Open menu">
+          <Menu size={18} />
+        </button>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-bold">{title}</p>
+          <p className="truncate text-xs text-slate-500">Academic year 2026–27</p>
+        </div>
+        <button onClick={() => signOut()} className="hidden items-center gap-1 rounded-2xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 sm:flex">
+          <LogOut size={14} /> Sign out
+        </button>
+        <div className="text-right">
+          <p className="text-sm font-semibold leading-none">{profile?.fullName}</p>
+          <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-500">{session?.role.replace('_', ' ')}</p>
+        </div>
+        <button onClick={() => signOut()} className="grid h-10 w-10 place-items-center rounded-full bg-cyan-700 text-xs font-bold text-white" title="Sign out">
+          {initials(profile?.fullName ?? 'U')}
+        </button>
+      </header>
+      <div className="mx-auto w-full max-w-6xl p-4 md:p-6 xl:p-8">{children}</div>
     </div>
   )
 }
