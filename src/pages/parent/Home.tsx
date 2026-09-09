@@ -43,7 +43,7 @@ export default function ParentHome() {
           <p className="mt-1 text-sm text-amber-800">{student.firstName} was marked absent on {format(parseISO(lastAbsent.date), 'd MMM')}.</p>
         </Card>
       )}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatTile label="Attendance" value={att.pct + '%'} hint={att.present + ' present days'} accent="bg-emerald-400" onClick={() => nav('/parent/attendance')} />
         <StatTile label="Homework" value={pending.length + ' New'} hint="Pending this week" accent="bg-sky-400" onClick={() => nav('/parent/homework')} />
         <StatTile label="Circulars" value={String(unreadCirculars(student.schoolId).length)} hint="School notices" accent="bg-violet-400" onClick={() => nav('/parent/circulars')} />
