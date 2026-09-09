@@ -21,7 +21,8 @@ export function ParentShell({ children }: { children: ReactNode }) {
   const hideChrome = loc.pathname.includes('/siblings')
 
   return (
-    <div className="mx-auto min-h-dvh max-w-lg bg-[#f3f7fb]">
+    <div className="min-h-dvh bg-[#d7e4ef]">
+    <div className="mx-auto min-h-dvh w-full max-w-lg bg-[#f3f7fb] md:max-w-3xl md:shadow-[0_24px_80px_-32px_rgba(15,23,42,0.35)] md:ring-1 md:ring-white lg:max-w-4xl">
       {!hideChrome && (
         <header className="sticky top-0 z-20 border-b border-white/60 bg-white/90 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
           <div className="flex items-center gap-3">
@@ -57,7 +58,7 @@ export function ParentShell({ children }: { children: ReactNode }) {
       )}
       <main className={hideChrome ? '' : 'safe-bottom px-4 pt-4'}>{children}</main>
       {!hideChrome && (
-        <nav className="fixed bottom-0 left-1/2 z-20 w-full max-w-lg -translate-x-1/2 border-t border-slate-100 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur">
+        <nav className="fixed bottom-0 left-1/2 z-20 w-full max-w-lg -translate-x-1/2 border-t border-slate-100 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:max-w-3xl lg:max-w-4xl">
           <div className="grid grid-cols-4">
             {[
               ['/parent', LayoutDashboard, 'Dashboard'],
@@ -86,6 +87,7 @@ export function ParentShell({ children }: { children: ReactNode }) {
           </div>
         </nav>
       )}
+    </div>
     </div>
   )
 }
@@ -124,19 +126,20 @@ export function StaffShell({ children, kind }: { children: ReactNode; kind: 'sch
   const items = staffNav[kind]
   const title = kind === 'super_admin' ? 'Meridian Network' : school?.name ?? 'Campus'
   return (
-    <div className="min-h-dvh bg-[#eef3f8] lg:grid lg:grid-cols-[260px_1fr]">
+    <div className="min-h-dvh bg-[#eef3f8] md:grid md:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
+      {open && <button className="fixed inset-0 z-20 bg-slate-900/40 md:hidden" onClick={() => setOpen(false)} aria-label="Close menu" />}
       <aside className={cn(
-        'fixed inset-y-0 left-0 z-30 w-[260px] border-r border-slate-200 bg-slate-950 text-white transition lg:static',
-        open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+        'fixed inset-y-0 left-0 z-30 flex w-[min(86vw,240px)] flex-col border-r border-slate-200 bg-slate-950 text-white transition md:static md:w-auto xl:w-auto',
+        open ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
       )}>
         <div className="flex items-center justify-between px-5 py-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">Meridian</p>
             <p className="mt-1 text-sm font-bold leading-tight">{title}</p>
           </div>
-          <button className="lg:hidden" onClick={() => setOpen(false)}><X size={18} /></button>
+          <button className="md:hidden" onClick={() => setOpen(false)}><X size={18} /></button>
         </div>
-        <nav className="space-y-1 px-3">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-24">
           {items.map(([to, Icon, label]) => (
             <NavLink
               key={to}
@@ -161,12 +164,12 @@ export function StaffShell({ children, kind }: { children: ReactNode; kind: 'sch
           <LogOut size={16} /> Sign out
         </button>
       </aside>
-      <div>
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur">
-          <button className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 lg:hidden" onClick={() => setOpen(true)}>
+      <div className="min-w-0">
+        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-3 py-3 backdrop-blur sm:px-4">
+          <button className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-100 md:hidden" onClick={() => setOpen(true)}>
             <Menu size={18} />
           </button>
-          <p className="hidden text-sm font-semibold text-slate-600 lg:block">Academic year 2026-2027</p>
+          <p className="hidden text-sm font-semibold text-slate-600 md:block">Academic year 2026–27 · Teacher / office desk</p>
           <div className="ml-auto flex items-center gap-3">
             <div className="text-right">
               <p className="text-sm font-semibold leading-none">{profile?.fullName}</p>
@@ -177,7 +180,7 @@ export function StaffShell({ children, kind }: { children: ReactNode; kind: 'sch
             </div>
           </div>
         </header>
-        <div className="p-4 lg:p-8">{children}</div>
+        <div className="mx-auto w-full max-w-6xl p-4 md:p-6 xl:p-8">{children}</div>
       </div>
     </div>
   )
