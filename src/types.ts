@@ -93,11 +93,13 @@ export interface Student {
   firstName: string
   lastName: string
   admissionNo: string
+  enrollmentNo?: string
   rollNo: string
   dateOfBirth: string
   gender: 'male' | 'female' | 'other'
   bloodGroup: string
   photoHue: number
+  photoUrl?: string
 }
 
 export interface StudentParentLink {
