@@ -16,6 +16,7 @@
 }
 
 html, body, #root { min-height: 100%; }
+html { overflow-x: hidden; }
 body {
   margin: 0;
   background: #f3f7fb;
