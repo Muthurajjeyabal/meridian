@@ -9,6 +9,7 @@ export default function People() {
   const db = loadDB()
   const schoolId = session?.schoolId
   const [q, setQ] = useState('')
+  const [classFilter, setClassFilter] = useState('')
   const [tab, setTab] = useState<'students' | 'teachers' | 'parents'>('students')
   const [form, setForm] = useState<'none' | 'student' | 'teacher'>('none')
   const [msg, setMsg] = useState('')
@@ -17,7 +18,14 @@ export default function People() {
   const classes = db.classes.filter((c) => c.schoolId === schoolId)
   const sections = db.sections.filter((s) => s.schoolId === schoolId)
   const subjects = db.subjects.filter((s) => s.schoolId === schoolId)
-  const students = db.students.filter((s) => s.schoolId === schoolId && studentName(s).toLowerCase().includes(q.toLowerCase()))
+  const allStudents = db.students.filter((s) => s.schoolId === schoolId)
+  const students = allStudents.filter((s) => {
+    const text = `${studentName(s)} ${s.admissionNo} ${s.enrollmentNo ?? ''}`.toLowerCase()
+    const okQ = !q.trim() || text.includes(q.trim().toLowerCase())
+    const okC = !classFilter || s.classId === classFilter
+    return okQ && okC
+  })
+  const showStudents = q.trim().length >= 2 || !!classFilter
   const teachers = db.teachers.filter((t) => t.schoolId === schoolId)
   const parents = db.parents.filter((p) => p.schoolId === schoolId)
 
@@ -175,19 +183,34 @@ export default function People() {
         </Card>
       )}
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         {(['students', 'teachers', 'parents'] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`rounded-full px-3 py-1 text-sm capitalize ${tab === t ? 'bg-cyan-700 text-white' : 'bg-white'}`}>{t}</button>
         ))}
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="ml-auto rounded-full border border-slate-200 px-3 py-1 text-sm" />
+        {tab === 'students' && (
+          <select value={classFilter} onChange={(e) => setClassFilter(e.target.value)} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm">
+            <option value="">All classes</option>
+            {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        )}
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tab === 'students' ? 'Search name or admission no' : 'Search'} className="min-w-[12rem] flex-1 rounded-full border border-slate-200 px-3 py-1 text-sm" />
       </div>
       <div className="mt-4 grid gap-2">
-        {tab === 'students' && students.map((s) => (
+        {tab === 'students' && !showStudents && (
+          <Card>
+            <p className="font-semibold">{allStudents.length} students</p>
+            <p className="mt-1 text-sm text-slate-500">பெயர் / admission number சர்ச் பண்ணுங்க, அல்லது class தேர்வு பண்ணுங்க. முழு லிஸ்ட் இங்கே வராது.</p>
+          </Card>
+        )}
+        {tab === 'students' && showStudents && students.length === 0 && (
+          <Card><p className="text-sm text-slate-500">No student matches this search.</p></Card>
+        )}
+        {tab === 'students' && showStudents && students.map((s) => (
           <Card key={s.id} className="flex items-center gap-3">
             {s.photoUrl ? <img src={s.photoUrl} alt="" className="h-12 w-12 rounded-2xl object-cover" /> : null}
             <div>
               <p className="font-semibold">{studentName(s)}</p>
-              <p className="text-xs text-slate-500">{classLabel(s)} · Adm {s.admissionNo}{s.enrollmentNo ? ` · Enr ${s.enrollmentNo}` : ''} · DOB {s.dateOfBirth}</p>
+              <p className="text-xs text-slate-500">{classLabel(s)} · Adm {s.admissionNo}{s.enrollmentNo ? ` · Enr ${s.enrollmentNo}` : ''}</p>
             </div>
           </Card>
         ))}
