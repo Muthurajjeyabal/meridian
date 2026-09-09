@@ -42,8 +42,8 @@ export default function Login() {
 
   return (
     <div className="min-h-dvh bg-[radial-gradient(circle_at_top,#bae6fd,transparent_45%),linear-gradient(#ecfeff,#f8fafc)] px-4 py-10">
-      <div className="mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-2">
-        <div className="hidden lg:block">
+      <div className="mx-auto grid max-w-5xl items-center gap-8 md:gap-10 lg:grid-cols-2">
+        <div className="hidden md:block">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-700">Meridian</p>
           <h1 className="mt-3 text-4xl font-extrabold leading-tight text-slate-900">
             One campus platform.<br />Every school stays private.
