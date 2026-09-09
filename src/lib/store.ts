@@ -508,3 +508,125 @@ export function savePrefs(profileId: string, patch: Partial<DB['prefs'][number]>
   })
   emit()
 }
+
+export function addStudentWithParent(input: {
+  schoolId: string
+  firstName: string
+  lastName: string
+  classId: string
+  sectionId: string
+  gender: 'male' | 'female' | 'other'
+  parentEmail: string
+  parentName: string
+  parentPhone: string
+  relationship?: string
+}) {
+  const db = loadDB()
+  const year = db.years.find((y) => y.schoolId === input.schoolId && y.isCurrent) ?? db.years.find((y) => y.schoolId === input.schoolId)
+  if (!year) throw new Error('No academic year')
+  const klass = db.classes.find((c) => c.id === input.classId && c.schoolId === input.schoolId)
+  const section = db.sections.find((s) => s.id === input.sectionId && s.classId === input.classId)
+  if (!klass || !section) throw new Error('Class / section missing')
+
+  const student: Student = {
+    id: uid('st'),
+    schoolId: input.schoolId,
+    academicYearId: year.id,
+    classId: input.classId,
+    sectionId: input.sectionId,
+    firstName: input.firstName.trim(),
+    lastName: input.lastName.trim(),
+    admissionNo: `ADM${Date.now().toString().slice(-6)}`,
+    rollNo: String(db.students.filter((s) => s.sectionId === input.sectionId).length + 1),
+    dateOfBirth: '2015-01-01',
+    gender: input.gender,
+    bloodGroup: 'O+',
+    photoHue: 160 + (db.students.length % 40) * 4,
+  }
+  db.students.push(student)
+
+  const email = input.parentEmail.trim().toLowerCase()
+  let profile = db.profiles.find((p) => p.email.toLowerCase() === email)
+  if (!profile) {
+    profile = {
+      id: uid('pr'),
+      email,
+      password: 'Parent@123',
+      fullName: input.parentName.trim(),
+      phone: input.parentPhone.trim(),
+    }
+    db.profiles.push(profile)
+  }
+  if (!db.roles.some((r) => r.profileId === profile!.id && r.schoolId === input.schoolId && r.role === 'parent')) {
+    db.roles.push({ profileId: profile.id, schoolId: input.schoolId, role: 'parent' })
+  }
+  let parent = db.parents.find((p) => p.profileId === profile.id && p.schoolId === input.schoolId)
+  if (!parent) {
+    parent = { id: uid('par'), schoolId: input.schoolId, profileId: profile.id, occupation: '' }
+    db.parents.push(parent)
+  }
+  if (!db.studentParents.some((l) => l.studentId === student.id && l.parentId === parent.id)) {
+    db.studentParents.push({
+      studentId: student.id,
+      parentId: parent.id,
+      relationship: input.relationship || 'parent',
+      schoolId: input.schoolId,
+    })
+  }
+
+  db.studentProfiles.push({
+    studentId: student.id,
+    schoolId: input.schoolId,
+    fatherName: input.relationship === 'mother' ? '' : input.parentName,
+    fatherMobile: input.relationship === 'mother' ? '' : input.parentPhone,
+    motherName: input.relationship === 'mother' ? input.parentName : '',
+    motherMobile: input.relationship === 'mother' ? input.parentPhone : '',
+    guardianName: input.parentName,
+    guardianMobile: input.parentPhone,
+    communicationMobile: input.parentPhone,
+    email,
+    address: '',
+  })
+
+  const school = db.schools.find((s) => s.id === input.schoolId)
+  if (school) school.studentCount = db.students.filter((s) => s.schoolId === input.schoolId).length
+  emit()
+  return { student, parentEmail: email, parentPassword: profile.password }
+}
+
+export function addTeacherWithAssign(input: {
+  schoolId: string
+  fullName: string
+  email: string
+  phone: string
+  department: string
+  classIds: string[]
+  sectionIds: string[]
+  subjectIds: string[]
+}) {
+  const db = loadDB()
+  const email = input.email.trim().toLowerCase()
+  if (db.profiles.some((p) => p.email.toLowerCase() === email)) throw new Error('Email already used')
+  const profile = {
+    id: uid('pr'),
+    email,
+    password: 'Teacher@123',
+    fullName: input.fullName.trim(),
+    phone: input.phone.trim(),
+  }
+  db.profiles.push(profile)
+  db.roles.push({ profileId: profile.id, schoolId: input.schoolId, role: 'teacher' })
+  const teacher: Teacher = {
+    id: uid('tch'),
+    schoolId: input.schoolId,
+    profileId: profile.id,
+    employeeCode: `EMP${Date.now().toString().slice(-5)}`,
+    department: input.department.trim() || 'General',
+    classIds: input.classIds,
+    sectionIds: input.sectionIds,
+    subjectIds: input.subjectIds,
+  }
+  db.teachers.push(teacher)
+  emit()
+  return { teacher, email, password: profile.password }
+}
