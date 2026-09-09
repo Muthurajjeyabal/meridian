@@ -10,6 +10,7 @@ export default function People() {
   const schoolId = session?.schoolId
   const [q, setQ] = useState('')
   const [classFilter, setClassFilter] = useState('')
+  const [sectionFilter, setSectionFilter] = useState('')
   const [tab, setTab] = useState<'students' | 'teachers' | 'parents'>('students')
   const [form, setForm] = useState<'none' | 'student' | 'teacher'>('none')
   const [msg, setMsg] = useState('')
@@ -23,9 +24,11 @@ export default function People() {
     const text = `${studentName(s)} ${s.admissionNo} ${s.enrollmentNo ?? ''}`.toLowerCase()
     const okQ = !q.trim() || text.includes(q.trim().toLowerCase())
     const okC = !classFilter || s.classId === classFilter
-    return okQ && okC
+    const okS = !sectionFilter || s.sectionId === sectionFilter
+    return okQ && okC && okS
   })
-  const showStudents = q.trim().length >= 2 || !!classFilter
+  const filterSections = sections.filter((s) => !classFilter || s.classId === classFilter)
+  const showStudents = q.trim().length >= 2 || !!classFilter || !!sectionFilter
   const teachers = db.teachers.filter((t) => t.schoolId === schoolId)
   const parents = db.parents.filter((p) => p.schoolId === schoolId)
 
@@ -188,10 +191,19 @@ export default function People() {
           <button key={t} onClick={() => setTab(t)} className={`rounded-full px-3 py-1 text-sm capitalize ${tab === t ? 'bg-cyan-700 text-white' : 'bg-white'}`}>{t}</button>
         ))}
         {tab === 'students' && (
-          <select value={classFilter} onChange={(e) => setClassFilter(e.target.value)} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm">
-            <option value="">All classes</option>
-            {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <>
+            <select value={classFilter} onChange={(e) => { setClassFilter(e.target.value); setSectionFilter('') }} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm">
+              <option value="">All classes</option>
+              {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <select value={sectionFilter} onChange={(e) => setSectionFilter(e.target.value)} className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm">
+              <option value="">All sections</option>
+              {filterSections.map((s) => {
+                const c = classes.find((x) => x.id === s.classId)
+                return <option key={s.id} value={s.id}>{c?.name}-{s.name}</option>
+              })}
+            </select>
+          </>
         )}
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tab === 'students' ? 'Search name or admission no' : 'Search'} className="min-w-[12rem] flex-1 rounded-full border border-slate-200 px-3 py-1 text-sm" />
       </div>
@@ -199,7 +211,7 @@ export default function People() {
         {tab === 'students' && !showStudents && (
           <Card>
             <p className="font-semibold">{allStudents.length} students</p>
-            <p className="mt-1 text-sm text-slate-500">பெயர் / admission number சர்ச் பண்ணுங்க, அல்லது class தேர்வு பண்ணுங்க. முழு லிஸ்ட் இங்கே வராது.</p>
+            <p className="mt-1 text-sm text-slate-500">Class + section தேர்வு பண்ணுங்க, அல்லது பெயர் சர்ச் பண்ணுங்க.</p>
           </Card>
         )}
         {tab === 'students' && showStudents && students.length === 0 && (
